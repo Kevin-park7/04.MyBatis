@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+			
+<mapper namespace="UserMapper10">
+
+	<resultMap id = "userSelectMap" type="user">
+  		<result property="userId" column="user_id" jdbcType="VARCHAR"/>
+  		<result property="userName" column="user_name" jdbcType="VARCHAR"/>
+  		<result property="password" column="password" jdbcType="VARCHAR"/>
+  		<result property="role" column="role" jdbcType="VARCHAR"/>
+  		<result property="ssn" column="ssn" jdbcType="VARCHAR"/>
+  		<result property="phone" column="cell_phone" jdbcType="VARCHAR"/>
+  		<result property="addr" column="addr" jdbcType="VARCHAR"/>
+  		<result property="email" column="email" jdbcType="VARCHAR"/>
+  		<result property="regDate" column="reg_date" jdbcType="DATE"/>
+  	</resultMap>
+	
+	<insert 	id="addUser" 	parameterType="user">
+		INSERT
+		INTO users(user_id,user_name, password,role,ssn,cell_phone,addr,email,reg_date)
+		VALUES(#{userId},#{userName},#{password},#{role},
+		#{ssn},#{phone},#{addr},#{email},
+		SYSDATE)									
+  	</insert>
+  	
+  	<select id="getUser" parameterType="string" resultMap="userSelectMap">
+  		SELECT
+  		user_name
+  		FROM users
+  		WHERE user_id = #{value}
+  	</select>
+  	
+  	<update	id="updateUser"
+  			parameterType="user">
+  		UPDATE users
+  		<set>
+  			<if test="userName!=null">user_name = #{userName},</if>
+  			<if test="password!=null">password = #{password},</if>
+  										role=#{role},
+  										ssn=<if test="ssn==0">null</if>
+  												<if test="ssn!=0">#{ssn}</if>
+  		</set>
+		WHERE user_id = #{userId}
+  	</update>
+  	
+  	<delete	id="removeUser"
+  			parameterType="string">
+  		DELETE
+		FROM users
+		WHERE user_id=#{value}
+		
+  	</delete>
+  	
+  	<sql id="select-users">
+  		SELECT
+		*
+		FROM users
+	</sql>
+	
+	<sql id="orderby-userId-desc">
+		ORDER BY user_id DESC
+	</sql>
+
+  	<select 	id="getUserList" parameterType="mybatis.service.domain.Search" resultMap="userSelectMap">
+  		<include refid="select-users"/>
+		<where>
+			<choose>
+				<when test=" searchCondition=='userId' ">
+					<if test="userId.size!=0">
+					user_id IN
+					<foreach item="value" collection="userId"
+						open="(" separator="," close=")">
+					#{value}
+					</foreach>
+					</if>
+				</when>
+			</choose>
+			
+		</where> 
+		<include refid="orderby-userId-desc"/>								
+  	</select>	
+
+  	
+  
+</mapper>
